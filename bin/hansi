@@ -1,0 +1,25 @@
+#!/usr/bin/env node
+
+'use strict';
+
+var hansi = require('./hansi');
+var fs = require('fs');
+var files = process.argv.slice(2);
+
+if (files.length === 0) {
+  files = ['-'];
+} else {
+  process.title = 'hansi ' + files.join(' ');
+}
+
+files.forEach(function (file) {
+  var stream;
+
+  if (file === '-') {
+    stream = process.stdin;
+  } else {
+    stream = fs.createReadStream(file);
+  }
+
+  console.log(stream, hansi);
+});
