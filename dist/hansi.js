@@ -1,25 +1,5 @@
 /*! hansi - v0.1.0 - 2013-11-27
 * Copyright (c) 2013 Jonas Pommerening; Licensed MIT */
-(function(definition) {
-  'use strict';
-
-  var tObject = 'object';
-  var tFunction = 'function';
-
-  if (typeof define === tFunction && define.amd) {
-    define(definition);
-  } else if (typeof exports === tObject && typeof require === tFunction) {
-    module.exports = definition();
-  } else {
-    this.hansi = definition();
-  }
-})(function() {
-  'use strict';
-
-  return {
-  };
-});
-
 (function(adapter) {
   'use strict';
 
