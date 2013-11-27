@@ -1,6 +1,6 @@
 {
   "name": "hansi",
-  "version": "0.1.0",
+  "version": "0.1.0-alpha",
   "description": "Streaming ANSI escape sequence parser and HTML generator",
 
   "license": "MIT",
