@@ -3,17 +3,20 @@
   <head>
     <meta charset="utf-8">
     <title>Mocha Tests</title>
-    <link rel="stylesheet" href="mocha.css" />
+    <link rel="stylesheet" href="../node_modules/mocha/mocha.css" />
   </head>
   <body>
     <div id="mocha"></div>
     <script src="../node_modules/should/should.js"></script>
     <script src="../node_modules/mocha/mocha.js"></script>
-    <script>mocha.setup('bdd')</script>
-    <script src="empty.js"></script>
+    <script src="../dist/hansi.js"></script>
     <script>
-      mocha.checkLeaks();
-      if (navigator.userAgent.indexOf('PhantomJS') < 0) {
+      mocha.setup('bdd');
+    </script>
+    <script src="hansi.js"></script>
+    <script>
+      if (!window.PHANTOMJS) {
+        mocha.checkLeaks();
         mocha.run();
       }
     </script>

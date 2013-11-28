@@ -14,7 +14,7 @@ module.exports = function(grunt) {
         stripBanners: true
       },
       dist: {
-        src: ['lib/index.js', 'lib/browser.js'],
+        src: ['lib/browser.js', 'lib/iter.js', 'lib/style.js', 'lib/index.js'],
         dest: 'dist/<%= pkg.name %>.js'
       }
     },
@@ -86,5 +86,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-mocha-cli');
 
   grunt.registerTask('test', ['mocha', 'mochacli']);
-  grunt.registerTask('default', ['jshint', 'test', 'concat', 'uglify']);
+  grunt.registerTask('dist', ['concat', 'uglify']);
+  grunt.registerTask('default', ['jshint', 'dist', 'test']);
 };
