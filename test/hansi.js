@@ -52,12 +52,21 @@
         (next() === null).should.equal(true);
       });
 
+      it('accepts unknown escape sequences', function () {
+        var next = hansi.iter('\033@1235~\033_123@');
+
+        next.should.not.throwError();
+        next.should.not.throwError();
+        (next() === null).should.equal(true);
+      });
+
     });
 
     describe('the value returned for escape sequences', function () {
       var reset = hansi.iter('\033[m')();
       var bold = hansi.iter('\033[1m')();
       var color = hansi.iter('\033[38;5;172m')();
+      var unknown = hansi.iter('\033@123/~')();
 
       it('is an object', function () {
         reset.should.be.an.instanceOf(Object);
@@ -82,7 +91,16 @@
       });
 
       it('stores arguments as numbers', function () {
+        reset.should.have.property('args').eql([]);
+        bold.should.have.property('args').eql([1]);
         color.should.have.property('args').eql([38, 5, 172]);
+      });
+
+      it('has meaningful values even for unknown sequences', function () {
+        unknown.should.be.an.instanceOf(Object);
+        unknown.should.have.property('start', '\033@');
+        unknown.should.have.property('args').eql([123]);
+        unknown.should.have.property('end', '/~');
       });
 
     });
