@@ -58,7 +58,6 @@ module.exports = function (grunt) {
       spec: {
         src: ['lib/hansi.js'],
         options: {
-          require: ['should'],
           ui: 'bdd'
         }
       }
