@@ -4,7 +4,6 @@ describe('hansi', function () {
 
   global.hansi = require('../lib/index.js');
 
-  require('should');
   require('./iter');
   require('./style');
 });

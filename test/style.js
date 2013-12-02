@@ -64,11 +64,63 @@ describe('style([object])', function () {
 
     describe('.set([styles])', function () {
 
-      it('sets styles', function () {
-        var style = hansi.style.Style();
-        style.set({'font-weight': 'bold'});
-        style.state.should.eql({'font-weight': 'bold'});
+      beforeEach(function () {
+        this.style = new hansi.style.Style();
       });
+
+      it('allows passing styles as an object', function () {
+        this.style.set('font-weight', 'bold');
+        this.style.state.should.eql({'font-weight': 'bold'});
+      });
+
+      it('allows passing styles per name and value', function () {
+        this.style.set('font-weight', 'bold');
+        this.style.state.should.eql({'font-weight': 'bold'});
+      });
+
+      it('handles multiple styles at once', function () {
+        this.style.set({'font-weight': 'bold', 'color': 'black'});
+        this.style.state.should.eql({'font-weight': 'bold', 'color': 'black'});
+      });
+
+      it('returns the style instance', function () {
+        this.style.set('font-weight', 'bold').should.equal(this.style);
+      });
+
+    });
+
+    describe('.unset([styles])', function () {
+
+      beforeEach(function () {
+        this.style = new hansi.style.Style({'font-weight': 'bold', 'color': 'black'});
+      });
+
+      it('allows passing styles as an array', function () {
+        this.style.unset(['font-weight']);
+        this.style.state.should.eql({'color': 'black'});
+      });
+
+      it('allows passing styles per name', function () {
+        this.style.unset('font-weight');
+        this.style.state.should.eql({'color': 'black'});
+      });
+
+      it('handles multiple styles at once', function () {
+        this.style.unset(['font-weight', 'color']);
+        this.style.state.should.eql({});
+      });
+
+      it('returns the style instance', function () {
+        this.style.unset('font-weight').should.equal(this.style);
+      });
+
+    });
+
+    describe('.add([styles])', function () {
+
+    });
+
+    describe('.remove([styles])', function () {
     });
 
     describe('.next(n1[, n2[, n3..]])', function () {

@@ -47,7 +47,7 @@ module.exports = function (grunt) {
     },
     mocha: {
       spec: {
-        src: ['test/hansi.html'],
+        src: ['test/mocha.html'],
         options: {
           run: true,
           log: true
@@ -56,8 +56,10 @@ module.exports = function (grunt) {
     },
     mochacli: {
       spec: {
-        src: ['lib/hansi.js'],
+        src: ['lib/mocha.js'],
         options: {
+          require: ['should'],
+          globals: ['hansi'],
           ui: 'bdd'
         }
       }
