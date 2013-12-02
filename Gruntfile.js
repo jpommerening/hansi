@@ -1,5 +1,6 @@
 /*global module:false*/
-module.exports = function(grunt) {
+module.exports = function (grunt) {
+  'use strict';
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -46,7 +47,7 @@ module.exports = function(grunt) {
     },
     mocha: {
       spec: {
-        src: ['test/*.html'],
+        src: ['test/hansi.html'],
         options: {
           run: true,
           log: true
@@ -55,7 +56,7 @@ module.exports = function(grunt) {
     },
     mochacli: {
       spec: {
-        src: ['test/*.js'],
+        src: ['lib/hansi.js'],
         options: {
           require: ['should'],
           ui: 'bdd'
