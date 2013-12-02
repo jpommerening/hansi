@@ -33,6 +33,12 @@ stream.pipe(process.stdout);
 process.stdin.pipe(stream);
 ```
 
+CLI:
+
+```console
+npm install | hansi
+```
+
 RequireJS:
 
 ```js
