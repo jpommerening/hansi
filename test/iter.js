@@ -1,19 +1,24 @@
 /*global describe, it, hansi */
-describe('hansi', function () {
+describe('iter(str)', function () {
   'use strict';
 
-  describe('#iter(str)', function () {
+  describe('when called as a function', function () {
+
+    it('takes a string parameter for initialization', function () {
+      var next = hansi.iter('hansi');
+      next.should.be.an.instanceOf(Function);
+    });
 
     it('returns a function', function () {
-      var next = hansi.iter('test');
+      var next = hansi.iter();
       next.should.be.an.instanceOf(Function);
     });
 
     describe('the returned function', function () {
 
       it('returns one string for plaintext', function () {
-        var next = hansi.iter('test');
-        next().should.equal('test');
+        var next = hansi.iter('hansi');
+        next().should.equal('hansi');
       });
 
       it('returns an object if an escape sequence was given', function () {
@@ -27,7 +32,7 @@ describe('hansi', function () {
       });
 
       it('returns `null` after all elements have been consumed', function () {
-        var next = hansi.iter('test');
+        var next = hansi.iter('hansi');
         next();
         (next() === null).should.equal(true);
       });
@@ -65,6 +70,10 @@ describe('hansi', function () {
         color.should.be.an.instanceOf(Object);
       });
 
+      it('contains the original string in the `str` property', function () {
+        reset.should.have.property('str', '\0x1b[m');
+      });
+
       it('contains the CSI in the `start` property', function () {
         reset.should.have.property('start', '\0x1b[');
       });
@@ -93,6 +102,72 @@ describe('hansi', function () {
         unknown.should.have.property('args').eql([123]);
         unknown.should.have.property('end', '/~');
       });
+
+    });
+
+  });
+
+  describe('#Iter(str)', function () {
+
+    it('creates an `Iter` instance', function () {
+      var iter = new hansi.iter.Iter();
+      iter.should.be.an.instanceOf(hansi.iter.Iter);
+    });
+
+    it('allows `new` to be omitted', function () {
+      var iter = hansi.iter.Iter();
+      iter.should.be.an.instanceOf(hansi.iter.Iter);
+    });
+
+    it('can be initialized with a string', function () {
+      var iter = hansi.iter.Iter('hansi');
+      iter.str.should.equal('hansi');
+    });
+
+    describe('.push([str])', function () {
+
+      it('appends the given string to the end of `.str`', function () {
+        var iter = new hansi.iter.Iter('hansi');
+        iter.push(', hallo!');
+        iter.str.should.equal('hansi, hallo!');
+      });
+
+      it('sets `.str` when called on an empty iterator', function () {
+        var iter = new hansi.iter.Iter();
+        iter.push('hallo hansi!');
+        iter.str.should.equal('hallo hansi!');
+      });
+
+      it('does not modify `.str` wen called without parameters', function () {
+        var iter = new hansi.iter.Iter('hansi');
+        iter.push();
+        iter.str.should.equal('hansi');
+      });
+
+    });
+
+    describe('.pop([chars])', function () {
+
+      it('returns the given number of characters from the beginning of `.str`', function () {
+        var iter = new hansi.iter.Iter('hallo hansi!');
+        iter.pop(5).should.equal('hallo');
+      });
+
+      it('removes the given number of characters from the beginning or `.str`', function () {
+        var iter = new hansi.iter.Iter('hallo hansi!');
+        iter.pop(6);
+        iter.str.should.equal('hansi!');
+      });
+
+      it('returns and clears `.str` when called without parameters', function () {
+        var iter = new hansi.iter.Iter('hallo hansi!');
+        iter.pop().should.equal('hallo hansi!');
+        iter.str.should.equal('');
+      });
+
+    });
+
+    describe('.next([str])', function () {
 
     });
 

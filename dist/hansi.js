@@ -26,48 +26,79 @@
 })((typeof window === 'undefined' ? this : window), function() {
   'use strict';
 
-  var ANSI = /(\033[@-_])([0-?]*)([ -\/]*[@-~])/;
+  var ANSI = /(\0x1b[@-_])([0-?]*)([ -\/]*[@-~])/;
 
   function splitArgs(str) {
     var args = str.split(';');
 
-    for (var i=0; i<args.length; i++) {
-      args[i] = parseInt(args[i]);
+    for (var i = 0; i < args.length; i++) {
+      args[i] = parseInt(args[i], 10);
     }
     return args;
   }
 
-  return function iter(str) {
-    var match = null;
-    return function next() {
+  function Iter(str) {
+    if (!(this instanceof Iter))
+      return new Iter(str);
+
+    this.str = str || '';
+    this.match = null;
+  }
+
+  Iter.prototype = {
+    constructor: Iter,
+    push: function push(str) {
+      if (str)
+        this.str += str;
+      return this;
+    },
+    pop: function pop(chars) {
+      var str;
+      if (typeof chars === 'undefined') {
+        str = this.str;
+        this.str = '';
+      } else {
+        str = this.str.substring(0, chars);
+        this.str = this.str.substring(chars);
+      }
+      return str;
+    },
+    next: function next(str) {
       var seq;
-      if (!str) return null;
-      if (!match) {
-        match = ANSI.exec(str);
-        if (!match) {
-          seq = str;
-          str = null;
-          return seq;
-        } else if (match.index) {
-          seq = str.substring(0, match.index);
-          str = str.substring(match.index);
-          return seq;
+      if (str) this.push(str);
+      if (!this.str) return null;
+      if (!this.match) {
+        this.match = ANSI.exec(this.str);
+        if (!this.match) {
+          return this.pop();
+        } else if (this.match.index) {
+          return this.pop(this.match.index);
         }
       }
-      if (match) {
+      if (this.match) {
         seq = {
-          start: match[1],
-          args: match[2] ? splitArgs(match[2]) : [],
-          end: match[3]
+          start: this.match[1],
+          args: this.match[2] ? splitArgs(this.match[2]) : [],
+          end: this.match[3],
+          str: this.pop(this.match[0].length)
         };
-        str = str.substring(match[0].length);
-        match = null;
+        this.match = null;
         return seq;
       }
       throw new Error('this code should never be reached');
-    };
+    }
   };
 
+  function iter(str) {
+    var i = new Iter(str);
+    return function next() {
+      return i.next.apply(i, arguments);
+    };
+  }
+
+  iter.Iter = Iter;
+
+  return iter;
 });
 
 (function (global, definition) {
@@ -85,19 +116,21 @@
   'use strict';
 
   function asObject(args) {
-    var obj = {};
+    var obj = args[0];
     if (typeof args[0] === 'string') {
+      obj = {};
       obj[args[0]] = args[1];
     }
-    return obj || args[0];
+    return obj;
   }
 
   function asArray(args) {
-    var arr = [];
+    var arr = args[0];
     if (typeof args[0] === 'string') {
+      arr = [];
       arr[0] = args[0];
     }
-    return arr || args[0];
+    return arr;
   }
 
   function wrap(body) {
@@ -110,7 +143,7 @@
 
   function wrapMethod(args, body) {
     return function () {
-      body.apply(this.state, args(arguments));
+      body(this.state, args(arguments));
       return this;
     };
   }
@@ -122,7 +155,7 @@
   }
 
   function unset(obj, props) {
-    for (var i=0; i<props.length; i++) {
+    for (var i = 0; i < props.length; i++) {
       delete obj[props[i]];
     }
   }
@@ -170,7 +203,7 @@
 
   function Style(state) {
     if (!(this instanceof Style))
-      return new Style();
+      return new Style(state);
 
     this.state = state || {};
   }
