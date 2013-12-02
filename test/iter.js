@@ -1,6 +1,8 @@
-/*global describe, it, hansi */
+/*global describe, it */
 describe('iter(str)', function () {
   'use strict';
+
+  var hansi = (typeof window !== 'undefined' ? window : global).hansi;
 
   describe('when called as a function', function () {
 
