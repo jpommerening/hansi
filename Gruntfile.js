@@ -46,22 +46,22 @@ module.exports = function (grunt) {
       }
     },
     mocha: {
+      options: {
+        run: true,
+        log: true
+      },
       spec: {
-        src: ['test/mocha.html'],
-        options: {
-          run: true,
-          log: true
-        }
+        src: ['test/mocha.html']
       }
     },
     mochacli: {
+      options: {
+        globals: ['should', 'hansi'],
+        require: ['should'],
+        ui: 'bdd'
+      },
       spec: {
-        src: ['lib/mocha.js'],
-        options: {
-          require: ['should'],
-          globals: ['hansi'],
-          ui: 'bdd'
-        }
+        src: ['test/mocha.js']
       }
     },
     watch: {

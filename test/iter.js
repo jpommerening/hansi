@@ -1,4 +1,4 @@
-/*global describe, it */
+/*global describe, it, beforeEach */
 describe('iter(str)', function () {
   'use strict';
 
@@ -61,48 +61,51 @@ describe('iter(str)', function () {
     });
 
     describe('the value returned for escape sequences', function () {
-      var reset = hansi.iter('\0x1b[m')();
-      var bold = hansi.iter('\0x1b[1m')();
-      var color = hansi.iter('\0x1b[38;5;172m')();
-      var unknown = hansi.iter('\0x1b@123/~')();
+
+      beforeEach(function () {
+        this.reset = hansi.iter('\0x1b[m')();
+        this.bold = hansi.iter('\0x1b[1m')();
+        this.color = hansi.iter('\0x1b[38;5;172m')();
+        this.unknown = hansi.iter('\0x1b@123/~')();
+      });
 
       it('is an object', function () {
-        reset.should.be.an.instanceOf(Object);
-        bold.should.be.an.instanceOf(Object);
-        color.should.be.an.instanceOf(Object);
+        this.reset.should.be.an.instanceOf(Object);
+        this.bold.should.be.an.instanceOf(Object);
+        this.color.should.be.an.instanceOf(Object);
       });
 
       it('contains the original string in the `str` property', function () {
-        reset.should.have.property('str', '\0x1b[m');
+        this.reset.should.have.property('str', '\0x1b[m');
       });
 
       it('contains the CSI in the `start` property', function () {
-        reset.should.have.property('start', '\0x1b[');
+        this.reset.should.have.property('start', '\0x1b[');
       });
 
       it('contains the command identifier in the `end` property', function () {
-        reset.should.have.property('end', 'm');
-        bold.should.have.property('end', 'm');
-        color.should.have.property('end', 'm');
+        this.reset.should.have.property('end', 'm');
+        this.bold.should.have.property('end', 'm');
+        this.color.should.have.property('end', 'm');
       });
 
       it('contains arguments in the `args` property', function () {
-        reset.should.have.property('args');
-        bold.should.have.property('args');
-        color.should.have.property('args');
+        this.reset.should.have.property('args');
+        this.bold.should.have.property('args');
+        this.color.should.have.property('args');
       });
 
       it('stores arguments as numbers', function () {
-        reset.should.have.property('args').eql([]);
-        bold.should.have.property('args').eql([1]);
-        color.should.have.property('args').eql([38, 5, 172]);
+        this.reset.should.have.property('args').eql([]);
+        this.bold.should.have.property('args').eql([1]);
+        this.color.should.have.property('args').eql([38, 5, 172]);
       });
 
       it('has meaningful values even for unknown sequences', function () {
-        unknown.should.be.an.instanceOf(Object);
-        unknown.should.have.property('start', '\0x1b@');
-        unknown.should.have.property('args').eql([123]);
-        unknown.should.have.property('end', '/~');
+        this.unknown.should.be.an.instanceOf(Object);
+        this.unknown.should.have.property('start', '\0x1b@');
+        this.unknown.should.have.property('args').eql([123]);
+        this.unknown.should.have.property('end', '/~');
       });
 
     });
