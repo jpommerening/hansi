@@ -1,8 +1,7 @@
-/*global describe, it, beforeEach */
+/*global describe, it, beforeEach, hansi */
 describe('iter(str)', function () {
-  'use strict';
 
-  var hansi = (typeof window !== 'undefined' ? window : global).hansi;
+  'use strict';
 
   describe('when called as a function', function () {
 
@@ -18,7 +17,7 @@ describe('iter(str)', function () {
 
     describe('the returned function', function () {
 
-      it('returns one string for plaintext', function () {
+      it('returns a string for plaintext', function () {
         var next = hansi.iter('hansi');
         next().should.equal('hansi');
       });
@@ -53,59 +52,22 @@ describe('iter(str)', function () {
       it('accepts unknown escape sequences', function () {
         var next = hansi.iter('\0x1b@1235~\0x1b_123@');
 
-        next.should.not.throwError();
-        next.should.not.throwError();
+        (function () {
+          next().should.be.an.instanceOf(Object);
+          next().should.be.an.instanceOf(Object);
+        }).should.not.throwError();
+
         (next() === null).should.equal(true);
       });
 
-    });
+      it('takes an optional string parameter to append more text', function () {
+        var next = hansi.iter('hansi');
 
-    describe('the value returned for escape sequences', function () {
-
-      beforeEach(function () {
-        this.reset = hansi.iter('\0x1b[m')();
-        this.bold = hansi.iter('\0x1b[1m')();
-        this.color = hansi.iter('\0x1b[38;5;172m')();
-        this.unknown = hansi.iter('\0x1b@123/~')();
-      });
-
-      it('is an object', function () {
-        this.reset.should.be.an.instanceOf(Object);
-        this.bold.should.be.an.instanceOf(Object);
-        this.color.should.be.an.instanceOf(Object);
-      });
-
-      it('contains the original string in the `str` property', function () {
-        this.reset.should.have.property('str', '\0x1b[m');
-      });
-
-      it('contains the CSI in the `start` property', function () {
-        this.reset.should.have.property('start', '\0x1b[');
-      });
-
-      it('contains the command identifier in the `end` property', function () {
-        this.reset.should.have.property('end', 'm');
-        this.bold.should.have.property('end', 'm');
-        this.color.should.have.property('end', 'm');
-      });
-
-      it('contains arguments in the `args` property', function () {
-        this.reset.should.have.property('args');
-        this.bold.should.have.property('args');
-        this.color.should.have.property('args');
-      });
-
-      it('stores arguments as numbers', function () {
-        this.reset.should.have.property('args').eql([]);
-        this.bold.should.have.property('args').eql([1]);
-        this.color.should.have.property('args').eql([38, 5, 172]);
-      });
-
-      it('has meaningful values even for unknown sequences', function () {
-        this.unknown.should.be.an.instanceOf(Object);
-        this.unknown.should.have.property('start', '\0x1b@');
-        this.unknown.should.have.property('args').eql([123]);
-        this.unknown.should.have.property('end', '/~');
+        next(', \0x1b[1mha').should.equal('hansi, ');
+        next('llo\0x1b[m').should.be.an.instanceOf(Object);
+        next().should.equal('hallo');
+        next('!').should.be.an.instanceOf(Object);
+        next().should.equal('!');
       });
 
     });
@@ -173,6 +135,110 @@ describe('iter(str)', function () {
     });
 
     describe('.next([str])', function () {
+
+      it('returns a string for plaintext', function () {
+        var iter = new hansi.iter.Iter('hansi');
+        iter.next().should.equal('hansi');
+      });
+
+      it('returns an object if an escape sequence was given', function () {
+        var iter = new hansi.iter.Iter('\0x1b[1m');
+        iter.next().should.be.an.instanceOf(Object);
+      });
+
+      it('returns `null` if an empty string was given', function () {
+        var iter = new hansi.iter.Iter('');
+        (iter.next() === null).should.equal(true);
+      });
+
+      it('returns `null` after all elements have been consumed', function () {
+        var iter = new hansi.iter.Iter('hansi');
+        iter.next();
+        (iter.next() === null).should.equal(true);
+      });
+
+      it('does not return empty strings between adjacend escape sequences', function () {
+        var iter = new hansi.iter.Iter('\0x1b[1mbold\0x1b[m\0x1b[4munderline');
+
+        iter.next().should.be.an.instanceOf(Object);
+        iter.next().should.equal('bold');
+        iter.next().should.be.an.instanceOf(Object);
+        iter.next().should.be.an.instanceOf(Object);
+        iter.next().should.equal('underline');
+        (iter.next() === null).should.equal(true);
+      });
+
+      it('accepts unknown escape sequences', function () {
+        var iter = new hansi.iter.Iter('\0x1b@1235~\0x1b_123@');
+
+        (function () {
+          iter.next().should.be.an.instanceOf(Object);
+          iter.next().should.be.an.instanceOf(Object);
+        }).should.not.throwError();
+
+        (iter.next() === null).should.equal(true);
+      });
+
+      it('takes an optional string parameter to append more text', function () {
+        var iter = new hansi.iter.Iter('hansi');
+
+        iter.next(', \0x1b[1mha').should.equal('hansi, ');
+        iter.next('llo\0x1b[m').should.be.an.instanceOf(Object);
+        iter.next().should.equal('hallo');
+        iter.next('!').should.be.an.instanceOf(Object);
+        iter.next().should.equal('!');
+      });
+
+      describe('the value returned for escape sequences', function () {
+
+        beforeEach(function () {
+          var iter = new hansi.iter.Iter('\0x1b[m\0x1b[1m\0x1b[38;5;172m\0x1b@123/~');
+          this.reset = iter.next();
+          this.bold = iter.next();
+          this.color = iter.next();
+          this.unknown = iter.next();
+        });
+
+        it('is an object', function () {
+          this.reset.should.be.an.instanceOf(Object);
+          this.bold.should.be.an.instanceOf(Object);
+          this.color.should.be.an.instanceOf(Object);
+        });
+
+        it('contains the original string in the `str` property', function () {
+          this.reset.should.have.property('str', '\0x1b[m');
+        });
+
+        it('contains the CSI in the `start` property', function () {
+          this.reset.should.have.property('start', '\0x1b[');
+        });
+
+        it('contains the command identifier in the `end` property', function () {
+          this.reset.should.have.property('end', 'm');
+          this.bold.should.have.property('end', 'm');
+          this.color.should.have.property('end', 'm');
+        });
+
+        it('contains arguments in the `args` property', function () {
+          this.reset.should.have.property('args');
+          this.bold.should.have.property('args');
+          this.color.should.have.property('args');
+        });
+
+        it('stores arguments as numbers', function () {
+          this.reset.should.have.property('args').eql([]);
+          this.bold.should.have.property('args').eql([1]);
+          this.color.should.have.property('args').eql([38, 5, 172]);
+        });
+
+        it('has meaningful values even for unknown sequences', function () {
+          this.unknown.should.be.an.instanceOf(Object);
+          this.unknown.should.have.property('start', '\0x1b@');
+          this.unknown.should.have.property('args').eql([123]);
+          this.unknown.should.have.property('end', '/~');
+        });
+
+      });
 
     });
 

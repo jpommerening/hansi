@@ -1,8 +1,7 @@
-/*global describe, it, beforeEach */
+/*global describe, it, beforeEach, hansi */
 describe('style([object])', function () {
-  'use strict';
 
-  var hansi = (typeof window !== 'undefined' ? window : global).hansi;
+  'use strict';
 
   describe('when called as a function', function () {
 
@@ -68,17 +67,17 @@ describe('style([object])', function () {
         this.style = new hansi.style.Style();
       });
 
+      it('sets the given property on the `.state` object', function () {
+        this.style.set('font-weight', 'bold');
+        this.style.state.should.eql({'font-weight': 'bold'});
+      });
+
       it('allows passing styles as an object', function () {
-        this.style.set('font-weight', 'bold');
+        this.style.set({'font-weight': 'bold'});
         this.style.state.should.eql({'font-weight': 'bold'});
       });
 
-      it('allows passing styles per name and value', function () {
-        this.style.set('font-weight', 'bold');
-        this.style.state.should.eql({'font-weight': 'bold'});
-      });
-
-      it('handles multiple styles at once', function () {
+      it('can handle multiple styles at once', function () {
         this.style.set({'font-weight': 'bold', 'color': 'black'});
         this.style.state.should.eql({'font-weight': 'bold', 'color': 'black'});
       });
@@ -95,17 +94,17 @@ describe('style([object])', function () {
         this.style = new hansi.style.Style({'font-weight': 'bold', 'color': 'black'});
       });
 
+      it('removes the given property from the `.state` object', function () {
+        this.style.unset('font-weight');
+        this.style.state.should.eql({'color': 'black'});
+      });
+
       it('allows passing styles as an array', function () {
         this.style.unset(['font-weight']);
         this.style.state.should.eql({'color': 'black'});
       });
 
-      it('allows passing styles per name', function () {
-        this.style.unset('font-weight');
-        this.style.state.should.eql({'color': 'black'});
-      });
-
-      it('handles multiple styles at once', function () {
+      it('can handle multiple styles at once', function () {
         this.style.unset(['font-weight', 'color']);
         this.style.state.should.eql({});
       });
@@ -118,9 +117,70 @@ describe('style([object])', function () {
 
     describe('.add([styles])', function () {
 
+      beforeEach(function () {
+        this.style = new hansi.style.Style();
+      });
+
+      it('adds the given value to the property of the `.state` object', function () {
+        this.style.add('font-family', 'arial');
+        this.style.state.should.eql({'font-family': ['arial']});
+        this.style.add('font-family', 'sans-serif');
+        this.style.state.should.eql({'font-family': ['arial', 'sans-serif']});
+      });
+
+      it('does not create duplicate values', function () {
+        this.style.add('font-family', 'arial');
+        this.style.state.should.eql({'font-family': ['arial']});
+        this.style.add('font-family', 'arial');
+        this.style.state.should.eql({'font-family': ['arial']});
+      });
+
+      it('allows passing styles as an object', function () {
+        this.style.add({'font-family': 'arial'});
+        this.style.state.should.eql({'font-family': ['arial']});
+      });
+
+      it('can handle multiple styles at once', function () {
+        this.style.add({'font-family': 'arial', 'text-decoration': 'line-through'});
+        this.style.state.should.eql({'font-family': ['arial'], 'text-decoration': ['line-through']});
+      });
+
+      it('returns the style instance', function () {
+        this.style.add('font-family', 'arial').should.equal(this.style);
+      });
+
     });
 
     describe('.remove([styles])', function () {
+
+      beforeEach(function () {
+        this.style = new hansi.style.Style({'font-family': ['arial', 'sans-serif'], 'text-decoration': ['line-through']});
+      });
+
+      it('removes the given value from the property of the `.state` object', function () {
+        this.style.remove('font-family', 'arial');
+        this.style.state.should.eql({'font-family': ['sans-serif'], 'text-decoration': ['line-through']});
+      });
+
+      it('removes empty lists from the `.state` object', function () {
+        this.style.remove('text-decoration', 'line-through');
+        this.style.state.should.eql({'font-family': ['arial', 'sans-serif']});
+      });
+
+      it('allows passing styles as an object', function () {
+        this.style.remove({'font-family': 'arial'});
+        this.style.state.should.eql({'font-family': ['sans-serif'], 'text-decoration': ['line-through']});
+      });
+
+      it('can handle multiple styles at once', function () {
+        this.style.remove({'font-family': 'arial', 'text-decoration': 'line-through'});
+        this.style.state.should.eql({'font-family': ['sans-serif']});
+      });
+
+      it('returns the style instance', function () {
+        this.style.remove('font-family', 'arial').should.equal(this.style);
+      });
+
     });
 
     describe('.next(n1[, n2[, n3..]])', function () {
