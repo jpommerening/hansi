@@ -6,4 +6,5 @@ describe('hansi', function () {
 
   require('./iter');
   require('./style');
+  require('./html');
 });

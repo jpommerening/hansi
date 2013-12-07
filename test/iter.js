@@ -91,44 +91,44 @@ describe('iter(str)', function () {
       iter.str.should.equal('hansi');
     });
 
-    describe('.push([str])', function () {
+    describe('.write([str])', function () {
 
       it('appends the given string to the end of `.str`', function () {
         var iter = new hansi.iter.Iter('hansi');
-        iter.push(', hallo!');
+        iter.write(', hallo!');
         iter.str.should.equal('hansi, hallo!');
       });
 
       it('sets `.str` when called on an empty iterator', function () {
         var iter = new hansi.iter.Iter();
-        iter.push('hallo hansi!');
+        iter.write('hallo hansi!');
         iter.str.should.equal('hallo hansi!');
       });
 
       it('does not modify `.str` wen called without parameters', function () {
         var iter = new hansi.iter.Iter('hansi');
-        iter.push();
+        iter.write();
         iter.str.should.equal('hansi');
       });
 
     });
 
-    describe('.pop([chars])', function () {
+    describe('.read([length])', function () {
 
       it('returns the given number of characters from the beginning of `.str`', function () {
         var iter = new hansi.iter.Iter('hallo hansi!');
-        iter.pop(5).should.equal('hallo');
+        iter.read(5).should.equal('hallo');
       });
 
       it('removes the given number of characters from the beginning or `.str`', function () {
         var iter = new hansi.iter.Iter('hallo hansi!');
-        iter.pop(6);
+        iter.read(6);
         iter.str.should.equal('hansi!');
       });
 
       it('returns and clears `.str` when called without parameters', function () {
         var iter = new hansi.iter.Iter('hallo hansi!');
-        iter.pop().should.equal('hallo hansi!');
+        iter.read().should.equal('hallo hansi!');
         iter.str.should.equal('');
       });
 
