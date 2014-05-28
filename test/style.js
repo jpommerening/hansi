@@ -44,7 +44,7 @@ describe('style([object])', function () {
 
   });
 
-  describe('#Style([object])', function () {
+  describe('.Style([object])', function () {
 
     it('creates a `Style` instance', function () {
       var style = new hansi.style.Style();
