@@ -1,5 +1,5 @@
-/*! hansi - v0.1.0-alpha - 2013-12-02
-* Copyright (c) 2013 Jonas Pommerening; Licensed MIT */
+/*! hansi - v0.1.0-alpha - 2014-06-01
+* Copyright (c) 2014 Jonas Pommerening; Licensed MIT */
 (function() {
   'use strict';
 
@@ -23,7 +23,7 @@
     if (typeof global.hansi === 'undefined') global.hansi = {};
     global.hansi.iter = definition();
   }
-})((typeof window === 'undefined' ? this : window), function() {
+})((typeof window === 'undefined' ? this : window), function () {
   'use strict';
 
   var ANSI = /(\0x1b[@-_])([0-?]*)([ -\/]*[@-~])/;
@@ -47,32 +47,32 @@
 
   Iter.prototype = {
     constructor: Iter,
-    push: function push(str) {
+    write: function write(str) {
       if (str)
         this.str += str;
       return this;
     },
-    pop: function pop(chars) {
+    read: function read(length) {
       var str;
-      if (typeof chars === 'undefined') {
+      if (typeof length === 'undefined') {
         str = this.str;
         this.str = '';
       } else {
-        str = this.str.substring(0, chars);
-        this.str = this.str.substring(chars);
+        str = this.str.substring(0, length);
+        this.str = this.str.substring(length);
       }
       return str;
     },
     next: function next(str) {
       var seq;
-      if (str) this.push(str);
+      if (str) this.write(str);
       if (!this.str) return null;
       if (!this.match) {
         this.match = ANSI.exec(this.str);
         if (!this.match) {
-          return this.pop();
+          return this.read();
         } else if (this.match.index) {
-          return this.pop(this.match.index);
+          return this.read(this.match.index);
         }
       }
       if (this.match) {
@@ -80,7 +80,7 @@
           start: this.match[1],
           args: this.match[2] ? splitArgs(this.match[2]) : [],
           end: this.match[3],
-          str: this.pop(this.match[0].length)
+          str: this.read(this.match[0].length)
         };
         this.match = null;
         return seq;
@@ -162,15 +162,17 @@
 
   function add(obj, props) {
     for (var k in props) {
+      var idx = obj[k] ? obj[k].indexOf(props[k]) : -1;
       if (!obj[k]) obj[k] = [];
-      obj[k].push(props[k]);
+      if (idx < 0) obj[k].push(props[k]);
     }
   }
 
   function remove(obj, props) {
     for (var k in props) {
-      if (props[k] in obj[k]) obj[k].splice(obj[k].indexOf(props[k]));
-      if (!obj[k]) delete obj[k];
+      var idx = obj[k] ? obj[k].indexOf(props[k]) : -1;
+      if (idx >= 0) obj[k].splice(idx, 1);
+      if (typeof obj[k] === 'object' && obj[k].length === 0) delete obj[k];
     }
   }
 
@@ -240,6 +242,140 @@
   return style;
 });
 
+(function (global, definition) {
+  'use strict';
+
+  if (typeof define === 'function' && define.amd) {
+    define(definition);
+  } else if (typeof exports === 'object' && typeof require === 'function') {
+    module.exports = definition();
+  } else {
+    if (typeof global.hansi === 'undefined') global.hansi = {};
+    global.hansi.dom = definition();
+  }
+})((typeof window === 'undefined' ? this : window), function() {
+  'use strict';
+
+  function DOM(elem) {
+    if (!(this instanceof DOM))
+      return new DOM(elem);
+
+    this.elem = elem;
+    this.live = [];
+    this.shadow = [];
+  }
+
+  DOM.prototype = {
+    constructor: DOM
+  };
+
+  function dom(elem) {
+    var d = new DOM(elem);
+    return function next() {
+      return d.next.apply(d, arguments);
+    };
+  }
+
+  dom.DOM = DOM;
+
+  return dom;
+});
+
+(function (global, definition) {
+  'use strict';
+
+  if (typeof define === 'function' && define.amd) {
+    define(definition);
+  } else if (typeof exports === 'object' && typeof require === 'function') {
+    module.exports = definition();
+  } else {
+    if (typeof global.hansi === 'undefined') global.hansi = {};
+    global.hansi.html = definition();
+  }
+})((typeof window === 'undefined' ? this : window), function () {
+  'use strict';
+
+  /*
+  function isEmpty(object) {
+    if (typeof object !== 'object') return !object;
+    for (var prop in object) if (object.hasOwnProperty(prop)) return false;
+    return true;
+  }
+  */
+
+  function HTML(tag, style, options) {
+    if (!(this instanceof HTML))
+      return new HTML();
+
+    this.height = options.height || 24;
+    this.width = options.width || 80;
+    this.line = 0;
+    this.column = 0;
+    this.buffer = [];
+    this.lines  = [];
+    this.offset = 0;
+    this.push(tag, style);
+  }
+
+  HTML.prototype = {
+    constructor: HTML,
+    push: function push(name, props, str) {
+      this.buffer.push({
+        tag: name,
+        style: props,
+        str: str || ''
+      });
+      return this;
+    },
+    pop: function pop() {
+      return this.buffer.pop();
+    },
+    detach: function detach() {
+      var buffer = this.buffer;
+      var tail = buffer[buffer.length - 1];
+      this.buffer = [];
+      this.push(tail.tag, tail.style);
+      return buffer;
+    },
+    tag: function tag(name) {
+      var tail = this.pop();
+      if (tail.str) this.push(tail.name, tail.props, tail.str);
+      return this.push(name, tail.props);
+    },
+    style: function style(props) {
+      var tail = this.pop();
+      if (tail.str) this.push(tail.name, tail.props, tail.str);
+      return this.push(tail.name, props);
+    },
+    write: function write(str) {
+      this.buffer[this.buffer.length - 1].str += str;
+      return this;
+    },
+    read: function read(length) {
+      if (typeof length === 'undefined' || length >= this.buffer.length)
+        return this.detach();
+      return this.buffer.splice(0, length);
+    }
+  };
+
+  function html(tag) {
+    var h = new HTML(tag);
+    return function next(str) {
+      if (typeof str === 'object') {
+        h.style(str);
+      }
+      if (typeof str === 'string') {
+        h.write(str);
+      }
+      return h.read();
+    };
+  }
+
+  html.HTML = HTML;
+
+  return html;
+});
+
 (function (global, deps, definition) {
   'use strict';
 
@@ -265,8 +401,9 @@
   }
 })((typeof window === 'undefined' ? this : window), [
   './iter',
-  './style'
-], function (iter, style) {
+  './style',
+  './html'
+], function (iter, style, html) {
   'use strict';
 
   function Hansi(options) {
@@ -347,6 +484,7 @@
   hansi.Hansi = Hansi;
   hansi.style = style;
   hansi.iter = iter;
- 
+  hansi.html = html;
+
   return hansi;
 });

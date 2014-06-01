@@ -48,8 +48,7 @@ module.exports = function (grunt) {
     mocha: {
       options: {
         run: true,
-        log: true,
-        reporter: 'Spec'
+        log: true
       },
       spec: {
         src: ['test/mocha.html']
@@ -59,7 +58,6 @@ module.exports = function (grunt) {
       options: {
         globals: ['should', 'hansi'],
         require: ['should'],
-        reporter: ['spec'],
         ui: 'bdd'
       },
       spec: {
