@@ -74,7 +74,7 @@ describe('iter(str)', function () {
 
   });
 
-  describe('#Iter(str)', function () {
+  describe('.Iter(str)', function () {
 
     it('creates an `Iter` instance', function () {
       var iter = new hansi.iter.Iter();
